@@ -159,12 +159,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f8fafc;
 <a id="dl" class="btn" href="#" download>下載</a>
 </div>
 <script>
+document.addEventListener('DOMContentLoaded',()=>{
 const a=document.getElementById,z={img:null,d:'6',id:null,g:0};
 a('drop').onclick=()=>a('file').click();
 a('file').onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=t=>{z.img=t.target.result;a('img').src=z.img;a('preview').hidden=!1;a('go').disabled=!1};r.readAsDataURL(f)}};
 a('clear').onclick=()=>{z.img=null;a('preview').hidden=!0;a('go').disabled=!0};
-a('dur').onclick=e=>{const b=e.target.closest('.dur');if(b){document.querySelectorAll('.dur').forEach(c=>c.classList.remove('active'));b.classList.add('active');z.d=b.dataset.v}};
+document.querySelectorAll('.dur').forEach(btn=>{
+    btn.onclick=e=>{const b=e.target.closest('.dur');if(b){document.querySelectorAll('.dur').forEach(c=>c.classList.remove('active'));b.classList.add('active');z.d=b.dataset.v}
+}});
 a('go').onclick=async()=>{if(!z.img||z.g)return;z.g=1;a('go').disabled=!0;a('prog').hidden=!1;try{const r=await fetch('/api/generate/video',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageUrl:z.img,duration:+z.d})});const d=await r.json();if(d.error)throw new Error(d.error);z.id=d.taskId;poll()};catch(e){alert(e.message);z.g=0;a('go').disabled=!1;a('prog').hidden=!0};};
-async function poll(){const r=await fetch('/api/status/'+z.id);const d=await r.json();const c=d.status==='succeeded'?100:Math.min((Date.now()%10000)/100,90);a('fill').style.width=c+'%';a('txt').textContent=d.status==='succeeded'?'完成!':d.status==='failed'?'失敗':'處理中...';if(d.status==='succeeded'){const w=await fetch('/api/result/'+z.id).then(r=>r.json());a('vid').src=w.videoUrl;a('vid').hidden=!1;a('dl').href=w.downloadUrl;z.g=0;a('prog').hidden=!0}else if(d.status!=='failed'){setTimeout(poll,3000)}else{z.g=0;a('go').disabled=!1;a('prog').hidden=!0}}
+async function poll(){const r=await fetch('/api/status/'+z.id);const d=await r.json();const c=d.status==='succeeded'?100:Math.min((Date.now()%10000)/100,90);a('fill').style.width=c+'%';a('txt').textContent=d.status==='succeeded'?'完成!':d.status==='failed'?'失敗':'處理中...';if(d.status==='succeeded'){const w=await fetch('/api/result/'+z.id).then(r=>r.json());a('vid').src=w.videoUrl;a('vid').hidden=!1;a('dl').href=w.downloadUrl;z.g=0;a('prog').hidden=!0}else if(d.status!=='failed'){setTimeout(poll,3000)}else{z.g=0;a('go').disabled=!1;a('prog').hidden=!0}};
+});
 </script>
 </body></html>`;
