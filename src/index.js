@@ -209,7 +209,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f8fafc;
 <button class="gen-btn" id="go" disabled>🎬 開始生成影片</button>
 </div>
 
-<div class="progress-section hidden" id="prog">
+<div id="prog" class="progress-section hidden">
 <div class="progress-bar">
 <div class="progress-fill" id="fill"></div>
 </div>
@@ -239,17 +239,18 @@ a('file').onchange=function(e){
         r.onload=function(t){
             z.img=t.target.result;
             a('img').src=z.img;
-            a('preview').hidden=!1;
-            a('go').disabled=!1;
-            a('uploadText').hidden=!0;
+            a('preview').hidden=false;
+            a('drop').hidden=true;
+            a('go').disabled=false;
         };
         r.readAsDataURL(f);
     }
 };
 a('clear').onclick=function(){
     z.img=null;
-    a('preview').hidden=!0;
-    a('go').disabled=!0;
+    a('preview').hidden=true;
+    a('drop').hidden=false;
+    a('go').disabled=true;
 };
 
 // 影片長度選擇
@@ -268,7 +269,7 @@ document.querySelectorAll('.duration-btn').forEach(function(btn){
 
 // 開始生成
 a('go').onclick=async function(){
-    if(!z.img||z.g)return;z.g=1;a('go').disabled=!0;a('prog').hidden=!1;a('uploadText').textContent='影片渲染中...';
+    if(!z.img||z.g)return;z.g=1;a('go').disabled=true;a('prog').hidden=false;a('uploadText').textContent='影片渲染中...';
     try{
         const r=await fetch('/api/generate/video',{
             method:'POST',
@@ -281,7 +282,7 @@ a('go').onclick=async function(){
         poll();
     }catch(e){
         alert(e.message);
-        z.g=0;a('go').disabled=!1;a('prog').hidden=!0;a('uploadText').textContent='點擊或拖曳圖片至此';
+        z.g=0;a('go').disabled=false;a('prog').hidden=true;a('uploadText').textContent='點擊或拖曳圖片至此';
     }
 };
 
@@ -295,14 +296,14 @@ async function poll(){
     if(d.status==='succeeded'){
         const w=await fetch('/api/result/'+z.id).then(r=>r.json());
         a('vid').src=w.videoUrl;
-        a('vid').hidden=!1;
+        a('vid').hidden=false;
         a('dl').href=w.downloadUrl;
-        a('videoSection').hidden=!1;
-        z.g=0;a('prog').hidden=!0;a('uploadText').textContent='生成完成! 可下載影片';
+        a('videoSection').hidden=false;
+        z.g=0;a('prog').hidden=true;a('uploadText').textContent='生成完成! 可下載影片';
     }else if(d.status!=='failed'){
         setTimeout(poll,3000);
     }else{
-        z.g=0;a('go').disabled=!1;a('prog').hidden=!0;a('uploadText').textContent='點擊或拖曳圖片至此';
+        z.g=0;a('go').disabled=false;a('prog').hidden=true;a('uploadText').textContent='點擊或拖曳圖片至此';
     }
 };
 });
